@@ -14,6 +14,6 @@ echo.
 
 start http://localhost:3000
 
-"C:\Users\GG\AppData\Roaming\Antigravity\bin\agy-node.cmd" server.js
+
 
 pause
