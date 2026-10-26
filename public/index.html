@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AntiDrugSystem — Поиск и сбор данных и контактов</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-[#0b0f19] text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500 selection:text-white">
+
+  <!-- Навигационная панель -->
+  <header class="sticky top-0 z-40 bg-[#0f172a]/90 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Логотип и Бренд -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <i data-lucide="radar" class="w-6 h-6 text-white"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xl font-black tracking-tight text-white">AntiDrug<span class="text-emerald-400">System</span></span>
+            <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full">Pro Scraper</span>
+          </div>
+          <p class="text-xs text-slate-400">Автопоиск и экстрактор контактов (Каталог еды 100+)</p>
+        </div>
+      </div>
+
+      <!-- Статус фонового сбора -->
+      <div class="hidden md:flex items-center space-x-3">
+        <div id="status-pill" class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/80 text-xs">
+          <span id="status-indicator-dot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+          <span id="status-indicator-text" class="text-slate-300 font-medium">Ожидание команд</span>
+        </div>
+      </div>
+
+      <!-- Быстрые действия в шапке -->
+      <div class="flex items-center space-x-2">
+        <button id="btn-quick-export-xlsx" class="flex items-center space-x-1.5 px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-600/25 rounded-lg text-xs font-bold transition-all">
+          <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+          <span>Скачать Excel (.xlsx)</span>
+        </button>
+        <button id="btn-quick-export-csv" class="flex items-center space-x-1.5 px-2.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs font-semibold transition-all" title="Скачать CSV с разделителем">
+          <i data-lucide="sheet" class="w-3.5 h-3.5"></i>
+          <span>CSV</span>
+        </button>
+        <button id="btn-quick-export-json" class="flex items-center space-x-1.5 px-2.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs font-semibold transition-all" title="Скачать JSON">
+          <i data-lucide="file-json" class="w-3.5 h-3.5"></i>
+          <span>JSON</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Основной контейнер -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Информационные карточки статистики -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
+      
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition-all">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Всего сайтов</span>
+          <div class="p-1.5 bg-blue-500/10 text-blue-400 rounded-lg"><i data-lucide="globe" class="w-4 h-4"></i></div>
+        </div>
+        <div class="flex items-baseline space-x-2">
+          <span id="stat-total-records" class="text-2xl font-black text-white">0</span>
+          <span id="stat-unique-domains" class="text-xs text-slate-400">доменов: 0</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition-all">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Телефоны</span>
+          <div class="p-1.5 bg-emerald-500/10 text-emerald-400 rounded-lg"><i data-lucide="phone-call" class="w-4 h-4"></i></div>
+        </div>
+        <div class="flex items-baseline space-x-2">
+          <span id="stat-with-phone" class="text-2xl font-black text-emerald-400">0</span>
+          <span class="text-xs text-slate-400">сайтов с тел.</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition-all">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Email адреса</span>
+          <div class="p-1.5 bg-cyan-500/10 text-cyan-400 rounded-lg"><i data-lucide="mail" class="w-4 h-4"></i></div>
+        </div>
+        <div class="flex items-baseline space-x-2">
+          <span id="stat-with-email" class="text-2xl font-black text-cyan-400">0</span>
+          <span class="text-xs text-slate-400">сайтов с почтой</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition-all">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Мессенджеры</span>
+          <div class="p-1.5 bg-indigo-500/10 text-indigo-400 rounded-lg"><i data-lucide="message-square" class="w-4 h-4"></i></div>
+        </div>
+        <div class="flex items-baseline space-x-2">
+          <span id="stat-with-socials" class="text-2xl font-black text-indigo-400">0</span>
+          <span class="text-xs text-slate-400">TG/WA/VK</span>
+        </div>
+      </div>
+
+      <div class="col-span-2 md:col-span-1 bg-slate-900/70 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition-all">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Каталог еды</span>
+          <div class="p-1.5 bg-amber-500/10 text-amber-400 rounded-lg"><i data-lucide="utensils" class="w-4 h-4"></i></div>
+        </div>
+        <div class="flex items-baseline space-x-2">
+          <span id="stat-total-keywords" class="text-2xl font-black text-amber-400">100</span>
+          <span id="stat-searched-keywords" class="text-xs text-slate-400">пройдено: 0</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Вкладки управления -->
+    <div class="flex border-b border-slate-800 space-x-2 overflow-x-auto no-scrollbar">
+      <button class="tab-btn active px-4 py-3 font-semibold text-sm rounded-t-xl border-b-2 border-emerald-400 text-emerald-400 bg-slate-800/40 flex items-center space-x-2 transition-all" data-tab="tab-records">
+        <i data-lucide="database" class="w-4 h-4"></i>
+        <span>Собранные контакты & Данные</span>
+      </button>
+
+      <button class="tab-btn px-4 py-3 font-semibold text-sm rounded-t-xl border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition-all" data-tab="tab-autosearch">
+        <i data-lucide="play-circle" class="w-4 h-4"></i>
+        <span>Автопоиск и Очередь</span>
+      </button>
+
+      <button class="tab-btn px-4 py-3 font-semibold text-sm rounded-t-xl border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition-all" data-tab="tab-keywords">
+        <i data-lucide="list-checks" class="w-4 h-4"></i>
+        <span>Каталог 100 слов про еду</span>
+      </button>
+
+      <button class="tab-btn px-4 py-3 font-semibold text-sm rounded-t-xl border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition-all" data-tab="tab-manual">
+        <i data-lucide="search" class="w-4 h-4"></i>
+        <span>Быстрый поиск / Парсинг URL</span>
+      </button>
+    </div>
+
+    <!-- ВКЛАДКА 1: БАЗА СОБРАННЫХ ДАННЫХ И КОНТАКТОВ -->
+    <section id="tab-records" class="tab-content block space-y-4">
+      
+      <!-- Панель фильтров и поиска -->
+      <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-3">
+        
+        <!-- Текстовый поиск -->
+        <div class="relative w-full md:w-80">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <input type="text" id="records-search-input" placeholder="Поиск по сайту, телефону, email..." class="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all">
+        </div>
+
+        <!-- Фильтры контактов -->
+        <div class="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
+          <button class="filter-pill active px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" data-filter="all">Все</button>
+          <button class="filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700/60" data-filter="with_phone">📞 Только с телефоном</button>
+          <button class="filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700/60" data-filter="with_email">✉️ Только с Email</button>
+          <button class="filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700/60" data-filter="with_socials">💬 Мессенджеры</button>
+        </div>
+
+        <!-- Выбор ключевого слова и Очистка -->
+        <div class="flex items-center space-x-2 w-full md:w-auto justify-end">
+          <select id="records-keyword-filter" class="bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500 max-w-[180px] truncate">
+            <option value="">Все ключевые слова</option>
+          </select>
+
+          <button id="btn-table-export-xlsx" title="Выгрузить в красивую таблицу Excel с автоподбором колонок" class="px-2.5 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 rounded-xl text-xs flex items-center space-x-1 border border-emerald-500/30 transition-all font-semibold">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Excel (.xlsx)</span>
+          </button>
+
+          <button id="btn-copy-all-phones" title="Скопировать все телефоны в буфер" class="px-2.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs flex items-center space-x-1 border border-slate-700 transition-all">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span>Телефоны</span>
+          </button>
+
+          <button id="btn-clear-all-records" title="Очистить всю базу" class="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-xs border border-red-500/20 transition-all">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Таблица данных -->
+      <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-950/70 border-b border-slate-800 text-slate-400 uppercase font-semibold tracking-wider">
+                <th class="py-3 px-4 w-12 text-center">#</th>
+                <th class="py-3 px-4 min-w-[200px]">Сайт и Ссылка</th>
+                <th class="py-3 px-4 min-w-[260px]">Собранные контакты (Тел, Почта, TG)</th>
+                <th class="py-3 px-4 min-w-[220px]">Что собрано (Контент / Описание)</th>
+                <th class="py-3 px-4 min-w-[140px]">Поисковый запрос</th>
+                <th class="py-3 px-4 min-w-[130px]">Дата сбора</th>
+                <th class="py-3 px-4 w-16 text-center">Инфо</th>
+              </tr>
+            </thead>
+            <tbody id="records-table-body" class="divide-y divide-slate-800/60 text-slate-300">
+              <!-- Динамические строки -->
+              <tr>
+                <td colspan="7" class="py-12 text-center text-slate-500">
+                  <div class="flex flex-col items-center justify-center space-y-2">
+                    <i data-lucide="inbox" class="w-8 h-8 text-slate-600"></i>
+                    <span>База пуста. Перейдите во вкладку "Автопоиск" или "Быстрый поиск", чтобы начать сбор контактов.</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Пагинация -->
+        <div class="bg-slate-950/70 border-t border-slate-800 px-4 py-3 flex items-center justify-between text-xs text-slate-400">
+          <div id="pagination-info">Показано 0 из 0 записей</div>
+          <div class="flex items-center space-x-2">
+            <button id="btn-page-prev" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 rounded-lg text-slate-300 transition-all font-medium">← Назад</button>
+            <span id="pagination-current-page" class="font-bold text-slate-200">1 / 1</span>
+            <button id="btn-page-next" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 rounded-lg text-slate-300 transition-all font-medium">Вперед →</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ВКЛАДКА 2: АВТОПОИСК И ОЧЕРЕДЬ СБОРА -->
+    <section id="tab-autosearch" class="tab-content hidden space-y-5">
+      
+      <!-- Пульт управления автопоиском -->
+      <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 shadow-xl">
+        <h2 class="text-base font-bold text-white mb-4 flex items-center space-x-2">
+          <i data-lucide="cpu" class="w-5 h-5 text-emerald-400"></i>
+          <span>Управление циклом автопоиска (Парсинг выдачи поисковика)</span>
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-5">
+          <!-- Глубина сбора на каждое слово -->
+          <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3">
+            <label class="block text-xs font-medium text-slate-400 mb-1">Глубина на запрос (кол-во сайтов)</label>
+            <select id="setting-depth" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+              <option value="5" selected>5 сайтов на слово (Быстро)</option>
+              <option value="8">8 сайтов на слово (Оптимально)</option>
+              <option value="12">12 сайтов на слово (Глубоко)</option>
+              <option value="20">20 сайтов на слово (Максимум)</option>
+            </select>
+          </div>
+
+          <!-- Задержка между запросами -->
+          <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3">
+            <label class="block text-xs font-medium text-slate-400 mb-1">Антибан задержка между сайтами</label>
+            <select id="setting-delay" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+              <option value="1500">1.5 сек (Быстрый режим)</option>
+              <option value="2500" selected>2.5 сек (Рекомендуемый)</option>
+              <option value="4000">4.0 сек (Безопасный)</option>
+            </select>
+          </div>
+
+          <!-- Глубокий парсинг контактов -->
+          <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
+            <label class="block text-xs font-medium text-slate-400">Глубокий поиск по /contacts</label>
+            <label class="inline-flex items-center cursor-pointer mt-1">
+              <input type="checkbox" id="setting-deep-scan" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+              <span class="ml-2 text-xs text-slate-300 font-medium">Проверять подстраницы</span>
+            </label>
+          </div>
+
+          <!-- Какие слова искать -->
+          <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3">
+            <label class="block text-xs font-medium text-slate-400 mb-1">Выборка слов</label>
+            <select id="setting-keywords-scope" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+              <option value="all" selected>Все 100 активных слов из каталога</option>
+              <option value="catering">Только Общепит и Рестораны</option>
+              <option value="delivery">Только Доставка и Кейтеринг</option>
+              <option value="products">Только Продукты и Производство</option>
+              <option value="desserts">Только Блюда и Десерты</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Кнопки управления очередью -->
+        <div class="flex flex-wrap items-center gap-3">
+          <button id="btn-queue-start" class="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-sm shadow-lg shadow-emerald-600/30 transition-all">
+            <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+            <span>Запустить автопоиск по каталогу</span>
+          </button>
+
+          <button id="btn-queue-pause" disabled class="flex items-center space-x-2 px-4 py-2.5 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/40 font-semibold rounded-xl text-sm disabled:opacity-40 transition-all">
+            <i data-lucide="pause" class="w-4 h-4"></i>
+            <span>Пауза</span>
+          </button>
+
+          <button id="btn-queue-stop" disabled class="flex items-center space-x-2 px-4 py-2.5 bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/40 font-semibold rounded-xl text-sm disabled:opacity-40 transition-all">
+            <i data-lucide="square" class="w-4 h-4"></i>
+            <span>Остановить</span>
+          </button>
+        </div>
+
+        <!-- Прогресс выполнения -->
+        <div class="mt-6 pt-5 border-t border-slate-800/80 space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400">Прогресс выполнения: <b id="queue-progress-text" class="text-white">0 / 0 ключевых слов (0%)</b></span>
+            <span id="queue-current-action" class="text-emerald-400 font-medium truncate max-w-md">Ожидание запуска...</span>
+          </div>
+          <div class="w-full bg-slate-950 rounded-full h-3 overflow-hidden p-0.5 border border-slate-800">
+            <div id="queue-progress-bar" class="bg-gradient-to-r from-emerald-500 to-cyan-400 h-full rounded-full transition-all duration-500 w-0"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Терминал живых логов процесса -->
+      <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+        <div class="bg-slate-900/90 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <div class="flex space-x-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+            </div>
+            <span class="text-xs font-mono font-medium text-slate-300 ml-2">Терминал активности парсинга (Live Logs)</span>
+          </div>
+          <button id="btn-refresh-logs" class="text-slate-400 hover:text-white text-xs flex items-center space-x-1">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>Обновить</span>
+          </button>
+        </div>
+        <div id="logs-container" class="p-4 font-mono text-xs text-slate-300 max-h-72 overflow-y-auto space-y-1.5">
+          <div class="text-slate-500">// Логи поисковой системы AntiDrugSystem будут отображаться здесь...</div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ВКЛАДКА 3: КАТАЛОГ 100 СЛОВ ПРО ЕДУ -->
+    <section id="tab-keywords" class="tab-content hidden space-y-4">
+      
+      <!-- Панель каталога -->
+      <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-3">
+        <div class="flex items-center space-x-3">
+          <div class="p-2 bg-amber-500/10 text-amber-400 rounded-xl"><i data-lucide="utensils" class="w-5 h-5"></i></div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Каталог поисковых терминов про еду</h3>
+            <p class="text-xs text-slate-400">100 предустановленных кулинарных, ресторанных и продуктовых направлений</p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2 w-full md:w-auto justify-end">
+          <input type="text" id="new-keyword-input" placeholder="Добавить новое слово..." class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500">
+          <button id="btn-add-keyword" class="px-3 py-1.5 bg-amber-600/30 hover:bg-amber-600/40 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-semibold flex items-center space-x-1 transition-all">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Добавить</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Фильтры по категориям каталога -->
+      <div class="flex flex-wrap gap-2" id="category-filter-chips">
+        <button class="category-chip active px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-white border border-slate-700" data-cat="all">Все категории (100)</button>
+        <button class="category-chip px-3 py-1 rounded-lg text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white border border-slate-800" data-cat="Заведения и общепит">Заведения и общепит (30)</button>
+        <button class="category-chip px-3 py-1 rounded-lg text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white border border-slate-800" data-cat="Доставка и кейтеринг">Доставка и кейтеринг (15)</button>
+        <button class="category-chip px-3 py-1 rounded-lg text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white border border-slate-800" data-cat="Продукты и фермы">Продукты и фермы (20)</button>
+        <button class="category-chip px-3 py-1 rounded-lg text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white border border-slate-800" data-cat="Блюда и десерты">Блюда и десерты (20)</button>
+        <button class="category-chip px-3 py-1 rounded-lg text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white border border-slate-800" data-cat="Сервис и опт">Сервис и опт (15)</button>
+      </div>
+
+      <!-- Сетка ключевых слов -->
+      <div id="keywords-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
+        <!-- Карточки слов рендерятся через app.js -->
+      </div>
+
+    </section>
+
+    <!-- ВКЛАДКА 4: БЫСТРЫЙ ПОИСК / ПАРСИНГ ПРЯМОГО URL -->
+    <section id="tab-manual" class="tab-content hidden space-y-4">
+      
+      <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 shadow-xl space-y-4">
+        <h2 class="text-base font-bold text-white flex items-center space-x-2">
+          <i data-lucide="zap" class="w-5 h-5 text-cyan-400"></i>
+          <span>Мгновенный поиск любого запроса или парсинг конкретного сайта</span>
+        </h2>
+        <p class="text-xs text-slate-400">
+          Вы можете ввести произвольный запрос (например: <code class="text-emerald-400">сыроварня подмосковье контакты</code>) или вставить прямую ссылку на сайт (например: <code class="text-emerald-400">https://dodo-pizza.ru</code>) — система мгновенно выгрузит контакты, телефон, email и сохранит в общую базу.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <div class="relative flex-1">
+            <i data-lucide="globe" class="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input type="text" id="manual-search-query" placeholder="Введите поисковый запрос про еду или полный URL сайта (https://...)" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-all">
+          </div>
+          
+          <select id="manual-search-depth" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-cyan-500">
+            <option value="3">3 сайта</option>
+            <option value="5" selected>5 сайтов</option>
+            <option value="10">10 сайтов</option>
+          </select>
+
+          <button id="btn-manual-search" class="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl text-sm shadow-lg shadow-cyan-600/30 flex items-center justify-center space-x-2 transition-all">
+            <i data-lucide="search" class="w-4 h-4"></i>
+            <span>Собрать данные</span>
+          </button>
+        </div>
+
+        <div id="manual-result-box" class="hidden mt-4 p-4 rounded-xl bg-slate-950/80 border border-slate-800 text-xs">
+          <div class="font-bold text-slate-200 mb-2 flex items-center space-x-2">
+            <span id="manual-result-title">Результаты ручного сбора:</span>
+          </div>
+          <div id="manual-result-content" class="space-y-2"></div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Модальное окно: Просмотр собранных данных сайта -->
+  <div id="record-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+      
+      <!-- Шапка модалки -->
+      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div class="flex items-center space-x-3 truncate">
+          <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl"><i data-lucide="file-text" class="w-5 h-5"></i></div>
+          <div class="truncate">
+            <h3 id="modal-site-title" class="text-sm font-bold text-white truncate">Название сайта</h3>
+            <a id="modal-site-link" href="#" target="_blank" class="text-xs text-emerald-400 hover:underline flex items-center space-x-1 truncate">
+              <span id="modal-site-url">https://domain.ru</span>
+              <i data-lucide="external-link" class="w-3 h-3 inline"></i>
+            </a>
+          </div>
+        </div>
+        <button id="modal-btn-close" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-all">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Тело модалки -->
+      <div class="p-6 overflow-y-auto space-y-4 text-xs">
+        
+        <!-- Контакты блок -->
+        <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-4 space-y-3">
+          <h4 class="font-bold text-slate-300 uppercase tracking-wider text-[11px] flex items-center space-x-1.5">
+            <i data-lucide="contact" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>Извлеченные контактные данные</span>
+          </h4>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <span class="text-slate-500 block mb-1">📞 Телефоны:</span>
+              <div id="modal-phones-list" class="space-y-1"></div>
+            </div>
+            <div>
+              <span class="text-slate-500 block mb-1">✉️ Email адреса:</span>
+              <div id="modal-emails-list" class="space-y-1"></div>
+            </div>
+          </div>
+
+          <div>
+            <span class="text-slate-500 block mb-1">💬 Мессенджеры и социальные сети:</span>
+            <div id="modal-socials-list" class="flex flex-wrap gap-2"></div>
+          </div>
+        </div>
+
+        <!-- Описание и что собрано -->
+        <div class="space-y-2">
+          <span class="text-slate-500 font-semibold block uppercase tracking-wider text-[11px]">Что собрано (Контент и мета-описание):</span>
+          <div id="modal-content-summary" class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-4 text-slate-300 leading-relaxed font-sans max-h-48 overflow-y-auto whitespace-pre-wrap"></div>
+        </div>
+
+        <!-- Метаданные -->
+        <div class="grid grid-cols-2 gap-3 text-[11px] text-slate-400 pt-2 border-t border-slate-800">
+          <div>Поисковый запрос: <b id="modal-keyword" class="text-emerald-400">Пиццерия</b></div>
+          <div>Дата и время сбора: <b id="modal-date" class="text-slate-200">26.10.2026, 16:30</b></div>
+        </div>
+
+      </div>
+
+      <!-- Подвал модалки -->
+      <div class="px-6 py-3 border-t border-slate-800 bg-slate-950/60 flex items-center justify-between">
+        <button id="modal-btn-delete" class="text-red-400 hover:text-red-300 text-xs flex items-center space-x-1 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-all">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          <span>Удалить запись</span>
+        </button>
+        <button id="modal-btn-close-bottom" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition-all">
+          Закрыть
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Всплывающие уведомления (Toast) -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- Скрипт приложения -->
+  <script src="app.js"></script>
+</body>
+</html>

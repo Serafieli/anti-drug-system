@@ -1,0 +1,69 @@
+/* antidrugsystem - Кастомные стили */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #0b0f19;
+  background-image: 
+    radial-gradient(at 15% 15%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
+    radial-gradient(at 85% 85%, rgba(6, 182, 212, 0.05) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Стилизация скроллбара */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Скрытие скроллбара там где нужно */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Анимация пульсации для статуса */
+@keyframes pulse-emerald {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+}
+
+.pulsing-indicator {
+  animation: pulse-emerald 2s infinite;
+}
+
+/* Интерактивные строки таблицы */
+.record-row {
+  transition: background-color 0.15s ease;
+}
+.record-row:hover {
+  background-color: rgba(30, 41, 59, 0.45);
+}
+
+/* Кнопки копирования */
+.copy-badge {
+  transition: all 0.15s ease;
+}
+.copy-badge:hover {
+  transform: translateY(-1px);
+}
+.copy-badge:active {
+  transform: translateY(0);
+}
